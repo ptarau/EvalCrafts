@@ -6,17 +6,21 @@ import rouge_stats as rs
 import key_stats as ks
 from itertools import islice
 
-from textcrafts.params import *
 import textcrafts
 from textcrafts import deepRank as dr
 from textcrafts.sim import *
+
+#from textcrafts.params import *
 
 #from textcrafts.parser_api import *
 
 ## PARAMS for EVALUATION
 
+
+
+
 def customGraphMaker() : # CHOICE OF PARSER TOOLKIT
-  return dr.GraphMaker(api_classname=dr.toolkit)
+  return dr.GraphMaker(params=dr.params)
   #return dr.GraphMaker(api_classname=CoreNLP_API)
 
 # sets max s number of documents to be processed, all if None
@@ -291,13 +295,13 @@ def go() :
   #fill_out_abs
 
 
-  def showParams() :
+  def showParams(p=dr.params) :
     print('wk',wk,'sk',sk,'\n'
           'with_full_text = ',with_full_text,'\n',
           'prod_mode = ' ,prod_mode,'\n',
           'max_docs = ',max_docs,'\n',
-          'noun_defs = ',noun_defs,'\n',
-          'all_recs =',all_recs,'\n'
+          'noun_defs = ',p.noun_defs,'\n',
+          'all_recs =',p.all_recs,'\n'
           )
 
   print("STARTING")
@@ -315,7 +319,7 @@ def go() :
 
 if __name__ == '__main__' :
   pass
-  #go()
+  go()
 
 '''
 sqrt
