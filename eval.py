@@ -10,13 +10,9 @@ import textcrafts
 from textcrafts import deepRank as dr
 from textcrafts.sim import *
 
-#from textcrafts.params import *
+WITH_DOCTALK=1
 
-#from textcrafts.parser_api import *
-
-## PARAMS for EVALUATION
-
-
+from doctalk.talk import Talker
 
 
 def customGraphMaker() : # CHOICE OF PARSER TOOLKIT
@@ -104,7 +100,22 @@ def runWithText(text,wk,sk,filter) :
   nk=gm.nxgraph.number_of_nodes()
   vk=gm.nxgraph.number_of_edges()
   return (keys,sents,nk,vk)
-  
+
+def runWithTextAlt(text,wk,sk,filter) :
+
+  talker=Talker(from_text=text)
+  ranked_sents,keys=talker.extract_content(sk,wk)
+
+  def clean_sents():
+    for r, s, ws in ranked_sents:
+      yield ws
+
+  #print('!!!KEYS',keys)
+  #print('!!!SENT',list(clean_sents()))
+
+  return (keys,clean_sents(),talker.g.number_of_nodes(),talker.g.number_of_edges())
+
+
 #  extract the gold standard abstracts from dataset  
 def fill_out_abs() :
    for doc_file in doc_files :
@@ -167,7 +178,11 @@ def process_file(path_file,full,wk,sk) :
   else:
     text = ''.join(title + [' '] + body)
 
-  (keys, xss, nk, ek) = runWithText(text, wk, sk, dr.isWord)
+  if WITH_DOCTALK :
+    (keys, xss, nk, ek) = runWithTextAlt(text, wk, sk, dr.isWord)
+  else:
+    (keys, xss, nk, ek) = runWithText(text, wk, sk, dr.isWord)
+
   print(doc_file, 'nodes:', nk, 'edges:', ek)  # ,title)
   exabs = map(lambda x: interleave(' ', x), xss)
   kf = out_keys_dir + doc_file
@@ -319,7 +334,7 @@ def go() :
 
 if __name__ == '__main__' :
   pass
-  go()
+  #go()
 
 '''
 sqrt
@@ -345,5 +360,28 @@ ABS ROUGE 1 : 0.42287435538537965 0.5259024228548685 0.4524099817168163
 ABS ROUGE 2 : 0.21639132498349145 0.2935673723686802 0.23872381307767448
 ABS ROUGE l : 0.38221906158068136 0.46994688459791806 0.41067624936976016
 ABS ROUGE w : 0.23062363261393387 0.11227662395080236 0.14346144225940838
+
+ALT:
+
+with_full_text =  True
+EXTRACTED KEYS AND ABSTRACTS
+KEYS SCORES : 0.23333333333333334 0.27174603174603174 0.24002638736654083
+ABS SCORES  : 0.326222379122084 0.4759801175335444 0.375085474621322
+ABS ROUGE 1 : 0.37220904810169503 0.5052038009579191 0.4086847435588332
+ABS ROUGE 2 : 0.12561043122501034 0.17477325596822227 0.13822009537286944
+ABS ROUGE l : 0.32842246478059733 0.4316437875524734 0.3605350511470246
+ABS ROUGE w : 0.1682786702645122 0.08616212771155245 0.10738457363421898
+
+MAIN:
+
+KEYS SCORES : 0.29503968253968255 0.3219444444444445 0.2959468380440248
+ABS SCORES  : 0.33452712584341465 0.4740477680258356 0.3845643390518048
+ABS ROUGE 1 : 0.3760798082044753 0.5094655020968573 0.4181257944004031
+ABS ROUGE 2 : 0.12405609245796925 0.1875968420204949 0.1431943359529297
+ABS ROUGE l : 0.3215833598499711 0.4227713509162004 0.35590257892454036
+ABS ROUGE w : 0.16300628670324277 0.0864869054013174 0.10753312632582054
+DONE
+wk 9 sk 10 
+with_full_text =  True 
 
 '''
