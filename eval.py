@@ -10,28 +10,23 @@ import textcrafts
 from textcrafts import deepRank as dr
 from textcrafts.sim import *
 
-WITH_DOCTALK=0
-
 from doctalk.talk import Talker, nice_keys
 
-
-def customGraphMaker() : # CHOICE OF PARSER TOOLKIT
-  return dr.GraphMaker(params=dr.params)
-  #return dr.GraphMaker(api_classname=CoreNLP_API)
+WITH_DOCTALK=1
 
 # sets max s number of documents to be processed, all if None
 max_docs = None
 # resource directories, for production and testing at small scale
-prod_mode=False
+prod_mode=True
 # shows moving averages if on
 trace_mode=False
 # if true abstracts are not trimmed out from documents
 with_full_text = False
 # number of keyphrases and summary sentences
-wk,sk=9,10
+#wk,sk=9,10
 #wk,sk=8,9
 #wk,sk=5,9
-#wk,sk=5,10
+wk,sk=5,10
 
 if prod_mode :
   data_dir='dataset/Krapivin2009/'
@@ -47,6 +42,11 @@ all_doc_files = sorted(glob.glob(doc_dir+"*.txt"))
 
 # END OF PARAMS
 
+def customGraphMaker() : # CHOICE OF PARSER TOOLKIT
+  return dr.GraphMaker(params=dr.params)
+  #return dr.GraphMaker(api_classname=CoreNLP_API)
+  
+  
 if max_docs :
   doc_files=list(islice(all_doc_files,max_docs))
 else :
@@ -168,7 +168,7 @@ def interleave_with(sep,end,xs) :
       
   return ''.join(gen())
 
-def process_file(path_file,full,wk,sk) :
+def process_file(i,path_file,full,wk,sk) :
   doc_file = dr.path2fname(path_file)
   d = disect_doc(path_file)
   title = d['TITLE']
@@ -186,7 +186,7 @@ def process_file(path_file,full,wk,sk) :
   else:
     (keys, xss, nk, ek) = runWithText(text, wk, sk, dr.isWord)
 
-  print(doc_file, 'nodes:', nk, 'edges:', ek)  # ,title)
+  print(i,':',doc_file, 'nodes:', nk, 'edges:', ek)  # ,title)
   exabs = map(lambda x: interleave(' ', x), xss)
   kf = out_keys_dir + doc_file
   af = out_abs_dir + doc_file
@@ -197,14 +197,14 @@ def process_file(path_file,full,wk,sk) :
 # extracts keys and abstacts from resource directory  
 def extract_keys_and_abs(full,wk,sk,show_errors=show_errors) :
   clean_all()
-  for path_file in doc_files :
+  for i,path_file in enumerate(doc_files) :
     if show_errors:
-      process_file(path_file, full, wk, sk)
+      process_file(i,path_file, full, wk, sk)
     else:
       try :
-        process_file(path_file, full, wk, sk)
+        process_file(i,path_file, full, wk, sk)
       except :
-        print('*** FAILING on:',doc_file,'ERROR:',sys.exc_info()[0])
+        print('*** FAILING on:',path_file,'ERROR:',sys.exc_info()[0])
 
 # apply Python base rouge to abstracts from given directory
 def eval_with_rouge(i) :
