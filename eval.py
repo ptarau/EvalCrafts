@@ -17,7 +17,7 @@ WITH_DOCTALK=1
 # sets max s number of documents to be processed, all if None
 max_docs = None
 # resource directories, for production and testing at small scale
-prod_mode=True
+prod_mode=False
 # shows moving averages if on
 trace_mode=False
 # if true abstracts are not trimmed out from documents
