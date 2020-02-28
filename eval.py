@@ -10,23 +10,31 @@ import textcrafts
 from textcrafts import deepRank as dr
 from textcrafts.sim import *
 
-from doctalk.talk import Talker, nice_keys
+from doctalk.talk import Talker, nice_keys, exists_file
 
 WITH_DOCTALK=1
+force=1
 
 # sets max s number of documents to be processed, all if None
 max_docs = None
 # resource directories, for production and testing at small scale
-prod_mode=False
+prod_mode=True
 # shows moving averages if on
 trace_mode=False
 # if true abstracts are not trimmed out from documents
 with_full_text = False
+
 # number of keyphrases and summary sentences
 #wk,sk=9,10
 #wk,sk=8,9
 #wk,sk=5,9
-wk,sk=5,10
+wk,sk=6,10
+
+match_sizes=True
+
+# END OF PARAMS
+
+# DATA FOLDERS
 
 if prod_mode :
   data_dir='dataset/Krapivin2009/'
@@ -40,13 +48,6 @@ keys_dir=data_dir+'keys/'
 abs_dir=data_dir+'abs/'
 all_doc_files = sorted(glob.glob(doc_dir+"*.txt"))
 
-# END OF PARAMS
-
-def customGraphMaker() : # CHOICE OF PARSER TOOLKIT
-  return dr.GraphMaker(params=dr.params)
-  #return dr.GraphMaker(api_classname=CoreNLP_API)
-  
-  
 if max_docs :
   doc_files=list(islice(all_doc_files,max_docs))
 else :
@@ -61,17 +62,25 @@ else :
 
 # clean output directories
 def clean_all() :
+  if not force : return
   clean_path(out_abs_dir)
   clean_path(out_keys_dir)
 
 # clean files at given directory path 
 def clean_path(path) :
+  if not force : return
+
   os.makedirs(path,exist_ok=True)
 
   files = glob.glob(path+"/*")
   for f in files:
     os.remove(f)
-   
+
+
+def customGraphMaker():  # CHOICE OF PARSER TOOLKIT
+  return dr.GraphMaker(params=dr.params)
+  # return dr.GraphMaker(api_classname=CoreNLP_API)
+
 # extract triple (title,abstract,body) with refs trimmed out
 def disect_doc(doc_file) :
   title=[]
@@ -149,9 +158,12 @@ def string2file(fname,text) :
 
 # turns content of file into a string
 def file2string(fname) :
-  with open(fname,'r') as f :
-    s = f.read()
-    return s.replace('-',' ')
+  try :
+    with open(fname,'r') as f :
+      s = f.read()
+      return s.replace('-',' ')
+  except:
+    return None
 
 # interleaves list with separator
 def interleave(sep,xs) :
@@ -170,6 +182,23 @@ def interleave_with(sep,end,xs) :
 
 def process_file(i,path_file,full,wk,sk) :
   doc_file = dr.path2fname(path_file)
+  kf = out_keys_dir + doc_file
+  af = out_abs_dir + doc_file
+
+  gold_kf = keys_dir + doc_file.replace('.txt','.key')
+  gold_af = abs_dir + doc_file
+
+  if match_sizes:
+    gold_k=file2string(gold_kf).count('\n')
+    if gold_k>1: wk=gold_k
+    gold_a=file2string(gold_af).count('.')
+    if gold_a > 1: sk = gold_a
+    print('!!!', gold_k, gold_a)
+
+  if not force and exists_file(kf) and exists_file(af) :
+    print('SKIPPING ALREADY PROCESSED:',doc_file)
+    return
+
   d = disect_doc(path_file)
   title = d['TITLE']
   abstract = d['ABSTRACT']
@@ -188,8 +217,7 @@ def process_file(i,path_file,full,wk,sk) :
 
   print(i,':',doc_file, 'nodes:', nk, 'edges:', ek)  # ,title)
   exabs = map(lambda x: interleave(' ', x), xss)
-  kf = out_keys_dir + doc_file
-  af = out_abs_dir + doc_file
+
   seq2file(kf, keys)
   seq2file(af, exabs)
 
@@ -218,6 +246,12 @@ def eval_with_rouge(i) :
     #if trace_mode : print(fname)
     gold=file2string(ref_name)   
     silver=file2string(abs_name)
+    if not gold:
+      print('gold file missing:', ref_name)
+      continue
+    if not silver:
+      print('silver file missing:', abs_name)
+      continue
     k=0
     for res in rs.rstat(silver,gold) :
       if k==i:    
@@ -249,6 +283,12 @@ def eval_abs() :
     #if trace_mode : print(fname)
     gold=file2string(ref_name)
     silver=file2string(abs_name)
+    if not gold:
+      print('gold file missing:', ref_name)
+      continue
+    if not silver:
+      print('silver file missing:', abs_name)
+      continue
     #print(gold)
     #print(silver)
     d=ks.kstat(silver,gold)
@@ -279,6 +319,12 @@ def eval_keys() :
     #if trace_mode : print(fname)
     gold=file2string(txt2key(ref_name))   
     silver=file2string(keys_name)
+    if not gold:
+      print('gold file missing:', ref_name)
+      continue
+    if not silver:
+      print('silver file missing:', keys_name)
+      continue
     #print(gold)
     #print(silver)
     d=ks.kstat(silver,gold)
@@ -454,4 +500,21 @@ ABS ROUGE w : 0.22618450593531633 0.10608733998121511 0.1372011320702345
 DONE
 wk 9 sk 10 
 with_full_text =  True 
+
+============
+
+EXTRACTED KEYS AND ABSTRACTS
+KEYS SCORES : 0.3018890542328042 0.28272413993086687 0.27872625270165585
+ABS SCORES  : 0.29199135894692035 0.4741254591989419 0.35253107227275626
+ABS ROUGE 1 : 0.3289382604456892 0.49812325423631876 0.37967021346343827
+ABS ROUGE 2 : 0.08314316232512607 0.1286562160629564 0.09632302893133335
+ABS ROUGE l : 0.2844590412718262 0.40782167663457236 0.32464067415222947
+ABS ROUGE w : 0.13676259473312 0.08160778927556327 0.09579412838921511
+DONE
+WITH_DOCTALK
+wk 5 sk 10 
+with_full_text =  False 
+ prod_mode =  True 
+ max_docs =  None 
+
 '''
