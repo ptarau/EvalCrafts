@@ -189,6 +189,13 @@ test/abs/*
 *.gv
 *.gv.pdf
 
+dataset/cnn_big/*
+dataset/dm_big/*
 
+dataset/cnn_dm_small/abs/*
+dataset/cnn_dm_small/keys/*
+
+temp_docs/*
+test_docs/*
 
 

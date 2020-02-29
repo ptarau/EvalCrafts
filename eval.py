@@ -12,35 +12,46 @@ from textcrafts.sim import *
 
 from doctalk.talk import Talker, nice_keys, exists_file
 
-WITH_DOCTALK=1
-force=1
-
-# sets max s number of documents to be processed, all if None
-max_docs = None
-# resource directories, for production and testing at small scale
-prod_mode=True
 # shows moving averages if on
 trace_mode=False
+
+# choice of processor
+WITH_DOCTALK=1
+CNN_DM=False
+# 2 forces deletion of json in temp_dir, 1=forces deletion of keys+abs
+force=1
+
+# number of keyphrases and summary sentences
+wk,sk=6,9
+
 # if true abstracts are not trimmed out from documents
 with_full_text = False
 
-# number of keyphrases and summary sentences
-#wk,sk=9,10
-#wk,sk=8,9
-#wk,sk=5,9
-wk,sk=6,10
-
+# sizes of silver abs and keys will match sizes in gold
 match_sizes=True
 
-# END OF PARAMS
+# sets max number of documents to be processed, all if None
+max_docs = None
 
-# DATA FOLDERS
+# resource directories, for production and testing at small scale
+prod_mode=True
 
 if prod_mode :
   data_dir='dataset/Krapivin2009/'
+  out_abs_dir  = "out/abs/"
+  out_keys_dir = "out/keys/"
+  temp_dir = 'temp_docs/'
   show_errors=False
 else :
-  data_dir='dataset/small/'
+  if CNN_DM:
+    #data_dir = 'dataset/cnn_dm_small/'
+    data_dir = 'dataset/cnn_big/'
+  else:
+    data_dir='dataset/small/'
+
+  out_abs_dir = "test/abs/"
+  out_keys_dir = "test/keys/"
+  temp_dir = 'test_docs/'
   show_errors = True
   
 doc_dir=data_dir+'docsutf8/'
@@ -53,18 +64,17 @@ if max_docs :
 else :
   doc_files=all_doc_files
 
-if prod_mode :
-  out_abs_dir  = "out/abs/"
-  out_keys_dir = "out/keys/"
-else :
-  out_abs_dir  = "test/abs/"
-  out_keys_dir = "test/keys/"
 
 # clean output directories
 def clean_all() :
   if not force : return
   clean_path(out_abs_dir)
   clean_path(out_keys_dir)
+  if force>1 : clean_path(temp_dir)
+
+def clean_temp() :
+  if not force : return
+  clean_path(temp_dir)
 
 # clean files at given directory path 
 def clean_path(path) :
@@ -113,9 +123,9 @@ def runWithText(text,wk,sk,filter) :
   vk=gm.nxgraph.number_of_edges()
   return (keys,sents,nk,vk)
 
-def runWithTextAlt(text,wk,sk,filter) :
+def runWithTextAlt(fname,wk,sk,filter) :
 
-  talker=Talker(from_text=text)
+  talker=Talker(from_file=fname)
   ranked_sents,keys=talker.extract_content(sk,wk)
 
   def clean_sents():
@@ -190,28 +200,34 @@ def process_file(i,path_file,full,wk,sk) :
 
   if match_sizes:
     gold_k=file2string(gold_kf).count('\n')
-    if gold_k>1: wk=gold_k
+    if gold_k>1: wk=gold_k+0 #max(wk,gold_k)
     gold_a=file2string(gold_af).count('.')
-    if gold_a > 1: sk = gold_a
-    print('!!!', gold_k, gold_a)
+    if gold_a > 1: sk = gold_a+0 # min(sk,gold_a)
+    #print('!!!', wk, sk)
 
   if not force and exists_file(kf) and exists_file(af) :
     print('SKIPPING ALREADY PROCESSED:',doc_file)
     return
 
-  d = disect_doc(path_file)
-  title = d['TITLE']
-  abstract = d['ABSTRACT']
-  body = d['BODY']
-  text_no_abs = ''.join(title + [' '] + body)
+  if CNN_DM :
+    text = file2string(path_file)
+  else :
+    d = disect_doc(path_file)
+    title = d['TITLE']
+    abstract = d['ABSTRACT']
+    body = d['BODY']
+    text_no_abs = ''.join(title + [' '] + body)
 
-  if full:
-    text = ''.join(title + [' '] + abstract + [' '] + body)
-  else:
-    text = ''.join(title + [' '] + body)
+    if full:
+      text = ''.join(title + [' '] + abstract + [' '] + body)
+    else:
+      text = ''.join(title + [' '] + body)
+
+  temp_file=temp_dir+doc_file
+  string2file(temp_file,text)
 
   if WITH_DOCTALK :
-    (keys, xss, nk, ek) = runWithTextAlt(text, wk, sk, dr.isWord)
+    (keys, xss, nk, ek) = runWithTextAlt(temp_file, wk, sk, dr.isWord)
   else:
     (keys, xss, nk, ek) = runWithText(text, wk, sk, dr.isWord)
 
@@ -367,6 +383,7 @@ def go() :
           'with_full_text = ',with_full_text,'\n',
           'prod_mode = ' ,prod_mode,'\n',
           'max_docs = ',max_docs,'\n',
+          'match_sizes = ',match_sizes,'\n',
           #'noun_defs = ',p.noun_defs,'\n',
           #'all_recs =',p.all_recs,'\n'
           )
@@ -388,133 +405,3 @@ if __name__ == '__main__' :
   pass
   #go()
 
-'''
-sqrt
-KEYS SCORES : 0.27416666666666667 0.34694444444444444 0.29275340952551887
-ABS SCORES  : 0.36118382771545704 0.5042334736635918 0.41332132103435465
-ABS ROUGE 1 : 0.3933145118929155 0.5184928165336313 0.43482299877528385
-ABS ROUGE 2 : 0.16357039735115525 0.232778796923158 0.1858206751162993
-ABS ROUGE l : 0.34487947667156577 0.442321878246675 0.3792731992052987
-ABS ROUGE w : 0.1964525340859074 0.09936084572373194 0.12626315636206803
-
-log
-KEYS SCORES : 0.27416666666666667 0.34694444444444444 0.29275340952551887
-ABS SCORES  : 0.37839101818507703 0.5385774853321073 0.4364521548054726
-ABS ROUGE 1 : 0.4046478727360066 0.5505292131459584 0.45296490614873336
-ABS ROUGE 2 : 0.19829718998915621 0.2972863472526791 0.2295444270832006
-ABS ROUGE l : 0.36403723150031414 0.4788527681008241 0.40464878815939126
-ABS ROUGE w : 0.21642668012136568 0.11444788050837104 0.1430266946676839
-
-
-MAIN:
-
-EXTRACTED KEYS AND ABSTRACTS
-KEYS SCORES : 0.29503968253968255 0.3219444444444445 0.2959468380440248
-ABS SCORES  : 0.33452712584341465 0.4740477680258356 0.3845643390518048
-ABS ROUGE 1 : 0.3760798082044753 0.5094655020968573 0.4181257944004031
-ABS ROUGE 2 : 0.12405609245796925 0.1875968420204949 0.1431943359529297
-ABS ROUGE l : 0.3215833598499711 0.4227713509162004 0.35590257892454036
-ABS ROUGE w : 0.16300628670324277 0.0864869054013174 0.10753312632582054
-DONE
-wk 9 sk 10 
-with_full_text =  True 
-
----------------------
-
-EXTRACTED KEYS AND ABSTRACTS
-KEYS SCORES : 0.32063492063492066 0.34734126984126984 0.3178978701037525
-ABS SCORES  : 0.30416748129317933 0.4112751156488142 0.34242633414995327
-ABS ROUGE 1 : 0.35535878093259593 0.4603085331098845 0.3873763551896513
-ABS ROUGE 2 : 0.07602657775654001 0.09304083704093895 0.08078371367464267
-ABS ROUGE l : 0.2880671913696598 0.36169737849970984 0.3122201684391084
-ABS ROUGE w : 0.1322837472128466 0.06307627558309192 0.08143434144704587
-DONE
-WITH_TEXTCRAFT
-wk 9 sk 10 
-with_full_text =  False 
- prod_mode =  False 
- max_docs =  None 
- 
-EXTRACTED KEYS AND ABSTRACTS
-KEYS SCORES : 0.3733333333333334 0.26896825396825397 0.29361042466305626
-ABS SCORES  : 0.30416748129317933 0.4112751156488142 0.34242633414995327
-ABS ROUGE 1 : 0.35535878093259593 0.4603085331098845 0.3873763551896513
-ABS ROUGE 2 : 0.07602657775654001 0.09304083704093895 0.08078371367464267
-ABS ROUGE l : 0.2880671913696598 0.36169737849970984 0.3122201684391084
-ABS ROUGE w : 0.1322837472128466 0.06307627558309192 0.08143434144704587
-DONE
-WITH_TEXTCRAFT
-wk 5 sk 10 
-with_full_text =  False 
- prod_mode =  False 
- max_docs =  None 
- 
-ALT =====================================
-
-KEYS SCORES : 0.2888888888888889 0.3600396825396825 0.3054839037064101
-ABS SCORES  : 0.32232775575193784 0.45299073003787027 0.3663694775557215
-ABS ROUGE 1 : 0.3876319785001836 0.5018374555311037 0.41952966445678525
-ABS ROUGE 2 : 0.10116519845733665 0.12818901937380384 0.10823287672321191
-ABS ROUGE l : 0.32237808748837565 0.4096058696356243 0.35004520068797124
-ABS ROUGE w : 0.15479348038132082 0.07611683764667457 0.09673993899837299
-DONE
-wk 9 sk 10 
-with_full_text =  False 
-
-
-EXTRACTED KEYS AND ABSTRACTS
-KEYS SCORES : 0.32591269841269843 0.395515873015873 0.3467373701813061
-ABS SCORES  : 0.32232775575193784 0.45299073003787027 0.3663694775557215
-ABS ROUGE 1 : 0.3876319785001836 0.5018374555311037 0.41952966445678525
-ABS ROUGE 2 : 0.10116519845733665 0.12818901937380384 0.10823287672321191
-ABS ROUGE l : 0.32237808748837565 0.4096058696356243 0.35004520068797124
-ABS ROUGE w : 0.15479348038132082 0.07611683764667457 0.09673993899837299
-DONE
-WITH_DOCTALK
-wk 5 sk 10 
-with_full_text =  False 
-
-EXTRACTED KEYS AND ABSTRACTS
-KEYS SCORES : 0.3364285714285714 0.395515873015873 0.34962635317898483
-ABS SCORES  : 0.3851968760343332 0.5352845542945579 0.4361280011212781
-ABS ROUGE 1 : 0.43139969007124035 0.5591830800838007 0.4689422470011375
-ABS ROUGE 2 : 0.21269730727127412 0.2676123452550708 0.2279407602659072
-ABS ROUGE l : 0.3912572762904009 0.4922857385622622 0.4241039456958681
-ABS ROUGE w : 0.22618450593531633 0.10608733998121511 0.1372011320702345
-DONE
-WITH_DOCTALK
-wk 5 sk 10 
-with_full_text =  True 
- prod_mode =  False 
- max_docs =  None 
- 
---------------------------
-
-
-KEYS SCORES : 0.30000000000000004 0.37115079365079356 0.3165950148175213
-ABS SCORES  : 0.3851968760343332 0.5352845542945579 0.4361280011212781
-ABS ROUGE 1 : 0.43139969007124035 0.5591830800838007 0.4689422470011375
-ABS ROUGE 2 : 0.21269730727127412 0.2676123452550708 0.2279407602659072
-ABS ROUGE l : 0.3912572762904009 0.4922857385622622 0.4241039456958681
-ABS ROUGE w : 0.22618450593531633 0.10608733998121511 0.1372011320702345
-DONE
-wk 9 sk 10 
-with_full_text =  True 
-
-============
-
-EXTRACTED KEYS AND ABSTRACTS
-KEYS SCORES : 0.3018890542328042 0.28272413993086687 0.27872625270165585
-ABS SCORES  : 0.29199135894692035 0.4741254591989419 0.35253107227275626
-ABS ROUGE 1 : 0.3289382604456892 0.49812325423631876 0.37967021346343827
-ABS ROUGE 2 : 0.08314316232512607 0.1286562160629564 0.09632302893133335
-ABS ROUGE l : 0.2844590412718262 0.40782167663457236 0.32464067415222947
-ABS ROUGE w : 0.13676259473312 0.08160778927556327 0.09579412838921511
-DONE
-WITH_DOCTALK
-wk 5 sk 10 
-with_full_text =  False 
- prod_mode =  True 
- max_docs =  None 
-
-'''
