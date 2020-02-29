@@ -12,14 +12,21 @@ from textcrafts.sim import *
 
 from doctalk.talk import Talker, nice_keys, exists_file
 
+from tr import keys_and_abs
+
 # shows moving averages if on
 trace_mode=False
 
 # choice of processor
-WITH_DOCTALK=1
-CNN_DM=False
+SYSTEM = "DOCTALK"
+#SYSTEM = "TEXTCRAFT"
+#SYSTEM = "TEXTRANK"
+
+
+CNN_DM=True
+
 # 2 forces deletion of json in temp_dir, 1=forces deletion of keys+abs
-force=1
+force=0
 
 # number of keyphrases and summary sentences
 wk,sk=6,9
@@ -30,18 +37,18 @@ with_full_text = False
 # sizes of silver abs and keys will match sizes in gold
 match_sizes=True
 
-# sets max number of documents to be processed, all if None
+# sets max number of documents to be processed, all if None or 0
 max_docs = None
 
 # resource directories, for production and testing at small scale
-prod_mode=True
+prod_mode=False
 
 if prod_mode :
   data_dir='dataset/Krapivin2009/'
   out_abs_dir  = "out/abs/"
   out_keys_dir = "out/keys/"
   temp_dir = 'temp_docs/'
-  show_errors=False
+  show_errors=True
 else :
   if CNN_DM:
     #data_dir = 'dataset/cnn_dm_small/'
@@ -52,7 +59,7 @@ else :
   out_abs_dir = "test/abs/"
   out_keys_dir = "test/keys/"
   temp_dir = 'test_docs/'
-  show_errors = True
+  show_errors = False
   
 doc_dir=data_dir+'docsutf8/'
 keys_dir=data_dir+'keys/'
@@ -136,6 +143,22 @@ def runWithTextAlt(fname,wk,sk,filter) :
   #print('!!!SENT',list(clean_sents()))
   keys=nice_keys(keys)
   return (keys,clean_sents(),talker.g.number_of_nodes(),talker.g.number_of_edges())
+
+
+def runWithPyTR(text,wk,sk,filter) :
+
+  talker=Talker(from_file=fname)
+  ranked_sents,keys=talker.extract_content(sk,wk)
+
+  def clean_sents():
+    for r, s, ws in ranked_sents:
+      yield ws
+
+  #print('!!!KEYS',keys)
+  #print('!!!SENT',list(clean_sents()))
+  keys=nice_keys(keys)
+  return (keys,clean_sents(),talker.g.number_of_nodes(),talker.g.number_of_edges())
+
 
 
 #  extract the gold standard abstracts from dataset  
@@ -223,16 +246,20 @@ def process_file(i,path_file,full,wk,sk) :
     else:
       text = ''.join(title + [' '] + body)
 
-  temp_file=temp_dir+doc_file
-  string2file(temp_file,text)
+  if SYSTEM == "TEXTRANK":
+    (keys,exabs) = keys_and_abs(text,wk,sk)
+    print(i, ':', doc_file)
 
-  if WITH_DOCTALK :
-    (keys, xss, nk, ek) = runWithTextAlt(temp_file, wk, sk, dr.isWord)
-  else:
-    (keys, xss, nk, ek) = runWithText(text, wk, sk, dr.isWord)
+  else :
+    if SYSTEM == "DOCTALK" :
+      temp_file = temp_dir + doc_file
+      string2file(temp_file, text)
+      (keys, xss, nk, ek) = runWithTextAlt(temp_file, wk, sk, dr.isWord)
+    elif SYSTEM == "TEXTCRAFT" :
+      (keys, xss, nk, ek) = runWithText(text, wk, sk, dr.isWord)
 
-  print(i,':',doc_file, 'nodes:', nk, 'edges:', ek)  # ,title)
-  exabs = map(lambda x: interleave(' ', x), xss)
+    print(i,':',doc_file, 'nodes:', nk, 'edges:', ek)  # ,title)
+    exabs = map(lambda x: interleave(' ', x), xss)
 
   seq2file(kf, keys)
   seq2file(af, exabs)
@@ -376,8 +403,7 @@ def go() :
 
 
   def showParams(p=dr.params) :
-    if WITH_DOCTALK : print('WITH_DOCTALK')
-    else: print('WITH_TEXTCRAFT')
+    print("SYSTEM :" ,SYSTEM)
     print(
           'wk',wk,'sk',sk,'\n'
           'with_full_text = ',with_full_text,'\n',
