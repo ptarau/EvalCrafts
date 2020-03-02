@@ -23,10 +23,10 @@ SYSTEM = "DOCTALK"
 #SYSTEM = "TEXTRANK"
 
 
-CNN_DM=True
+CNN_DM=False
 
 # 2 forces deletion of json in temp_dir, 1=forces deletion of keys+abs
-force=0
+force=1
 
 # number of keyphrases and summary sentences
 wk,sk=6,9
@@ -35,13 +35,13 @@ wk,sk=6,9
 with_full_text = False
 
 # sizes of silver abs and keys will match sizes in gold
-match_sizes=True
+match_sizes = True
 
 # sets max number of documents to be processed, all if None or 0
-max_docs = None
+max_docs = 100
 
 # resource directories, for production and testing at small scale
-prod_mode=False
+prod_mode=True
 
 if prod_mode :
   data_dir='dataset/Krapivin2009/'
@@ -426,6 +426,9 @@ def go() :
   eval_with_rouge(3)  # w
   print('DONE')
   showParams()
+  if SYSTEM=='DOCTALK' :
+    from doctalk.params import talk_params
+    talk_params().show()
 
 if __name__ == '__main__' :
   pass
