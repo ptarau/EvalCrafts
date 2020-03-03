@@ -23,25 +23,25 @@ SYSTEM = "DOCTALK"
 #SYSTEM = "TEXTRANK"
 
 
-CNN_DM=False
+CNN_DM=True
 
 # 2 forces deletion of json in temp_dir, 1=forces deletion of keys+abs
 force=1
 
 # number of keyphrases and summary sentences
-wk,sk=6,9
+wk,sk=6,6
 
 # if true abstracts are not trimmed out from documents
 with_full_text = False
 
 # sizes of silver abs and keys will match sizes in gold
-match_sizes = True
+match_sizes = False
 
 # sets max number of documents to be processed, all if None or 0
-max_docs = 100
+max_docs = None
 
 # resource directories, for production and testing at small scale
-prod_mode=True
+prod_mode=False
 
 if prod_mode :
   data_dir='dataset/Krapivin2009/'
