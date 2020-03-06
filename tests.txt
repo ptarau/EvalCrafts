@@ -650,7 +650,44 @@ with_full_text =  False
  max_docs =  100
  match_sizes =  True
 
+after after
 
+EXTRACTED KEYS AND ABSTRACTS
+KEYS SCORES : 0.28944589106545615 0.26860891267315407 0.2754487822395817
+ABS SCORES  : 0.35605141119528333 0.4118052731935153 0.3781279081436111
+ABS ROUGE 1 : 0.40260125586855516 0.4289631563418549 0.4082415899572895
+ABS ROUGE 2 : 0.09516525487286907 0.10226889651198061 0.09691952766703218
+ABS ROUGE l : 0.32853864180781334 0.34591324539605783 0.3328203139709858
+ABS ROUGE w : 0.16259484020218706 0.06313561953367536 0.08941225337789112
+DONE
+SYSTEM : DOCTALK
+wk 6 sk 6 
+with_full_text =  False 
+ prod_mode =  True 
+ max_docs =  100 
+ match_sizes =  True 
+
+force = False
+sum_count = 4
+key_count = 6
+max_answers = 4
+cloud_size = 24
+subgraph_size = 11
+quiet = True
+answers_by_rank = True
+pers = True
+expand_query = 2
+guess_wh_word_NERs = 0
+compounds = True
+svo_edges = True
+subject_centered = True
+all_to_sent = False
+use_to_def = True
+prioritize_compounds = 100
+show_pics = 0
+show_rels = 0
+to_prolog = 0
+think_depth = 4
 
 
 EXTRACTED KEYS AND ABSTRACTS
