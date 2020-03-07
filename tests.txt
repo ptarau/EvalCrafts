@@ -670,6 +670,7 @@ with_full_text =  False
  max_docs =  100
  match_sizes =  True
 
+-------------------
 after after
 
 EXTRACTED KEYS AND ABSTRACTS
@@ -685,29 +686,26 @@ wk 6 sk 6
 with_full_text =  False 
  prod_mode =  True 
  max_docs =  100 
- match_sizes =  True 
+ match_sizes =  True <=======
+ 
 
-force = False
-sum_count = 4
-key_count = 6
-max_answers = 4
-cloud_size = 24
-subgraph_size = 11
-quiet = True
-answers_by_rank = True
-pers = True
-expand_query = 2
-guess_wh_word_NERs = 0
-compounds = True
-svo_edges = True
-subject_centered = True
-all_to_sent = False
-use_to_def = True
-prioritize_compounds = 100
-show_pics = 0
-show_rels = 0
-to_prolog = 0
-think_depth = 4
+2303 : 637759.txt nodes: 2375 edges: 12014
+EXTRACTED KEYS AND ABSTRACTS
+KEYS SCORES : 0.2833965272767335 0.310957901179148 0.28299532024548735
+ABS SCORES  : 0.35959015393910804 0.38191995929354616 0.36051689797200515
+ABS ROUGE 1 : 0.4074820908987491 0.3837444728174145 0.3775138157942599
+ABS ROUGE 2 : 0.09735219022536706 0.09229366572105123 0.09011184350538441
+ABS ROUGE l : 0.3353065507354842 0.32084806139200533 0.3170294873096957
+ABS ROUGE w : 0.1702141007255143 0.0625335706662246 0.08634681077943836
+DONE
+SYSTEM : DOCTALK
+wk 6 sk 6 
+with_full_text =  False 
+ prod_mode =  True 
+ max_docs =  None 
+ match_sizes =  False <========
+ 
+-------------------
 
 
 EXTRACTED KEYS AND ABSTRACTS
