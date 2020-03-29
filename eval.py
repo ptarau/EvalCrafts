@@ -38,7 +38,7 @@ with_full_text = False
 match_sizes = True
 
 # sets max number of documents to be processed, all if None or 0
-max_docs = 50
+max_docs = 100
 
 # resource directories, for production and testing at small scale
 prod_mode=True
