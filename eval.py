@@ -137,9 +137,10 @@ def runWithTextAlt(fname,wk,sk,filter) :
   params.top_sum=sk
   params.top_keys=wk
   talker=Talker(from_file=fname,params=params)
-  sk,vk=params.max_sum, params.max_keys
-  ranked_sents,keys=talker.extract_content(sk,wk)
-
+  #sk,vk=params.max_sum, params.max_keys
+  #ranked_sents,keys=talker.extract_content(sk,wk)
+  ranked_sents=talker.summary
+  keys=talker.keywords
   def clean_sents():
     for r, s, ws in ranked_sents:
       yield ws
