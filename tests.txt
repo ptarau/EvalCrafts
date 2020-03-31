@@ -876,3 +876,47 @@ think_depth = 4
 show_pics = 1
 show_rels = 0
 to_prolog = 0
+
+
+KEYS SCORES : 0.1784493230479903 0.4490099827932647 0.247654264944681
+ABS SCORES  : 0.35442928810931135 0.41509809262800956 0.37236927747016046
+ABS ROUGE 1 : 0.4039510959534106 0.43339562302212675 0.4005573255378742
+ABS ROUGE 2 : 0.09425889876784554 0.10001537200882211 0.09298013763751233
+ABS ROUGE l : 0.32720842633377556 0.3512463110371086 0.3283783650686274
+ABS ROUGE w : 0.159582972881877 0.06579726309606619 0.0880388106634498
+DONE
+SYSTEM : DOCTALK
+wk 10 sk 9 
+with_full_text =  False 
+ prod_mode =  True 
+ max_docs =  100 
+ match_sizes =  True 
+
+force = False
+compounds = True
+svo_edges = True
+subject_centered = True
+all_to_sent = False
+use_to_def = True
+prioritize_compounds = 64
+use_line_graph = False
+with_refiner = True
+top_sum = 9
+top_keys = 6
+max_sum = 36.0
+max_keys = 13
+top_answers = 4
+max_answers = 16
+cloud_size = 24
+subgraph_size = 32
+quiet = True
+answers_by_rank = True
+pers = True
+expand_query = 2
+guess_wh_word_NERs = 0
+think_depth = 4
+show_pics = 1
+show_rels = 0
+to_prolog = 0
+>>> 
+

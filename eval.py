@@ -37,7 +37,7 @@ wk,sk=10,9
 with_full_text = False
 
 # sizes of silver abs and keys will match sizes in gold
-match_sizes = False
+match_sizes = True
 
 # sets max number of documents to be processed, all if None or 0
 max_docs = 100
