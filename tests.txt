@@ -836,7 +836,7 @@ with_refiner = False <===================
 
 
 EXTRACTED KEYS AND ABSTRACTS
-KEYS SCORES : 0.2092438000166327 0.4129872745073986 0.2685472364268566
+KEYS SCORES : 0.1885661439841174 0.4404623637456456 0.2560950727816096
 ABS SCORES  : 0.34017595455168725 0.43700010821186197 0.371804242948282
 ABS ROUGE 1 : 0.38462979510612977 0.46947247942449377 0.4049970332365815
 ABS ROUGE 2 : 0.08603590894478245 0.10681719504266843 0.09119827242359571
@@ -857,8 +857,8 @@ subject_centered = True
 all_to_sent = False
 use_to_def = True
 prioritize_compounds = 64
-use_line_graph = 0
-with_refiner = True <=============================
+use_line_graph = False
+with_refiner = True <====================
 max_sum = 42
 max_keys = 12
 top_sum = 10
