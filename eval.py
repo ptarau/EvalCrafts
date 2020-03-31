@@ -11,6 +11,7 @@ from textcrafts import deepRank as dr
 from textcrafts.sim import *
 
 from doctalk.talk import Talker, nice_keys, exists_file
+from doctalk.params import talk_params
 
 from tr import keys_and_abs
 
@@ -29,13 +30,14 @@ CNN_DM=False
 force=1
 
 # number of keyphrases and summary sentences
-wk,sk=6,6
+#wk,sk=6,6
+wk,sk=10,9
 
 # if true abstracts are not trimmed out from documents
 with_full_text = False
 
 # sizes of silver abs and keys will match sizes in gold
-match_sizes = True
+match_sizes = False
 
 # sets max number of documents to be processed, all if None or 0
 max_docs = 100
@@ -131,8 +133,11 @@ def runWithText(text,wk,sk,filter) :
   return (keys,sents,nk,vk)
 
 def runWithTextAlt(fname,wk,sk,filter) :
-
-  talker=Talker(from_file=fname)
+  params = talk_params()
+  params.top_sum=sk
+  params.top_keys=wk
+  talker=Talker(from_file=fname,params=params)
+  sk,vk=params.max_sum, params.max_keys
   ranked_sents,keys=talker.extract_content(sk,wk)
 
   def clean_sents():
