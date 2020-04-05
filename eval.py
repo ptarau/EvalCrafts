@@ -1,6 +1,7 @@
 import glob
 import sys
 import os
+import random
 
 import rouge_stats as rs
 import key_stats as ks
@@ -31,13 +32,14 @@ force=1
 
 # number of keyphrases and summary sentences
 #wk,sk=6,6
-wk,sk=10,9
+#wk,sk=10,9
+wk,sk=10,8 #best
 
 # if true abstracts are not trimmed out from documents
 with_full_text = False
 
 # sizes of silver abs and keys will match sizes in gold
-match_sizes = True
+match_sizes = False
 
 # sets max number of documents to be processed, all if None or 0
 max_docs = 100
@@ -137,10 +139,8 @@ def runWithTextAlt(fname,wk,sk,filter) :
   params.top_sum=sk
   params.top_keys=wk
   talker=Talker(from_file=fname,params=params)
-  #sk,vk=params.max_sum, params.max_keys
-  #ranked_sents,keys=talker.extract_content(sk,wk)
-  ranked_sents=talker.summary
-  keys=talker.keywords
+  ranked_sents=talker.get_summary()
+  keys=talker.get_keys()
   def clean_sents():
     for r, s, ws in ranked_sents:
       yield ws
@@ -320,7 +320,48 @@ def eval_with_rouge(i) :
   rouge_name=(1,2,'l','w')  
   print ("ABS ROUGE",rouge_name[i],':',avg(p),avg(r),avg(f))
 
-# our own 
+
+# apply Python base rouge to abstracts from given directory
+def keys_with_rouge(i):
+  f = []
+  p = []
+  r = []
+  for doc_file in doc_files:
+    fname = dr.path2fname(doc_file)
+    ref_name = keys_dir + fname
+    ref_name=ref_name.replace('.txt','.key')
+    abs_name = out_keys_dir + fname
+    # if trace_mode : print(fname)
+    gold = file2string(ref_name)
+    silver = file2string(abs_name)
+    if not gold:
+      print('gold file missing:', ref_name)
+      continue
+    if not silver:
+      print('silver file missing:', abs_name)
+      continue
+    k = 0
+    for res in rs.rstat(silver, gold):
+      if k == i:
+        d = res[0]
+
+        px = d['p'][0]
+        rx = d['r'][0]
+        fx = d['f'][0]
+
+        p.append(px)
+        r.append(rx)
+        f.append(fx)
+
+      elif k > i:
+        break
+      k += 1
+    if trace_mode: print('  ABS ROUGE MOV. AVG', i, fname, avg(p), avg(r), avg(f))
+  rouge_name = (1, 2, 'l', 'w')
+  print("KEYS ROUGE", rouge_name[i], ':', avg(p), avg(r), avg(f))
+
+
+# our own
 def eval_abs() :
   f=[]
   p=[]
@@ -422,19 +463,22 @@ def go() :
 
   print("STARTING")
   showParams()
+  random.seed(42)
   extract_keys_and_abs(with_full_text, wk, sk)
   print("EXTRACTED KEYS AND ABSTRACTS")
+  #print('random at start',random.randint(0,2**16))
+  print('')
   eval_keys()
   eval_abs()
+  #print('random_before_rouge', random.randint(0, 2 ** 16))
+  keys_with_rouge(0)
   eval_with_rouge(0)  # 1
   eval_with_rouge(1)  # 2
   eval_with_rouge(2)  # l
   eval_with_rouge(3)  # w
   print('DONE')
   showParams()
-  if SYSTEM=='DOCTALK' :
-    from doctalk.params import talk_params
-    talk_params().show()
+  #print('random_at_end',random.randint(0,2**16))
 
 if __name__ == '__main__' :
   pass
