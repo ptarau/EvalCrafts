@@ -42,7 +42,7 @@ with_full_text = False
 match_sizes = False
 
 # sets max number of documents to be processed, all if None or 0
-max_docs = None
+max_docs = 100
 
 # resource directories, for production and testing at small scale
 prod_mode=True
@@ -466,19 +466,19 @@ def go() :
   random.seed(42)
   extract_keys_and_abs(with_full_text, wk, sk)
   print("EXTRACTED KEYS AND ABSTRACTS")
-  #print('random at start',random.randint(0,2**16))
+
   print('')
   eval_keys()
-  eval_abs()
-  #print('random_before_rouge', random.randint(0, 2 ** 16))
   keys_with_rouge(0)
+
+  eval_abs()
   eval_with_rouge(0)  # 1
   eval_with_rouge(1)  # 2
   eval_with_rouge(2)  # l
   eval_with_rouge(3)  # w
   print('DONE')
   showParams()
-  #print('random_at_end',random.randint(0,2**16))
+
 
 if __name__ == '__main__' :
   pass
