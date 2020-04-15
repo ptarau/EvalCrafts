@@ -14,7 +14,6 @@ from textcrafts.sim import *
 from doctalk.talk import Talker, nice_keys, exists_file
 from doctalk.params import talk_params
 
-from tr import keys_and_abs
 
 # shows moving averages if on
 trace_mode=False
@@ -24,6 +23,9 @@ SYSTEM = "DOCTALK"
 #SYSTEM = "TEXTCRAFT"
 #SYSTEM = "TEXTRANK"
 
+
+#if SYSTEM == "TEXTCRAFT":
+from tr import keys_and_abs
 
 CNN_DM=False
 
