@@ -24,8 +24,8 @@ SYSTEM = "DOCTALK"
 #SYSTEM = "TEXTRANK"
 
 
-#if SYSTEM == "TEXTCRAFT":
-from tr import keys_and_abs
+if SYSTEM == "TEXTRANK":
+   from tr import keys_and_abs
 
 CNN_DM=False
 
